@@ -1,0 +1,7 @@
+interface:
+  display_name: "Scholar Paper Fetcher"
+  short_description: "Build a scholar-centered corpus of published papers and cited papers, then fetch official PDFs through live Edge sessions."
+  default_prompt: "Use $scholar-paper-fetcher to build a scholar-centered corpus of published papers and cited published papers, then fetch supported official PDFs through my live logged-in Edge session."
+
+policy:
+  allow_implicit_invocation: false
