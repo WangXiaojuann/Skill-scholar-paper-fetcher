@@ -1,56 +1,54 @@
 # scholar-paper-fetcher
 
-`scholar-paper-fetcher` is a Codex skill for building a scholar-centered corpus of official published papers and cited published papers, then downloading supported publisher PDFs through a live authorized Microsoft Edge session.
+`scholar-paper-fetcher` is a Codex skill for collecting official published papers around one scholar. You give Codex the scholar's name and the URL of that scholar's Google Scholar profile. From there, the skill helps Codex find the scholar's published papers, download supported official PDFs, extract references from those papers, and then download the published versions of the cited papers when they are available from supported sources.
 
-## What It Supports
+## What this skill does
 
-- Full scholar pipeline:
-  `scholar_name + google_scholar_url -> published scholar papers -> cited published papers -> official PDF download`
-- Direct official-PDF downloading from supported platforms when the paper list already exists
-- Supported publisher routes:
-  `ScienceDirect / Elsevier`, `Wiley`, and `JSTOR`
+- Works inside Codex as a reusable skill
+- Starts from:
+  `scholar_name + google_scholar_url`
+- Targets:
+  - the scholar's own published papers
+  - the published versions of papers cited by those papers
+- Downloads only official published PDFs from supported publisher platforms
 
-## What It Does Not Do
+## Supported sources
 
-- It does not create new access rights.
-- It does not use SSRN-only items, working papers, or unpublished drafts as download targets.
-- It does not parallelize PDF fetching.
+At the moment, this skill is set up for these three sources:
 
-## Repository Layout
+- `ScienceDirect / Elsevier`
+- `Wiley`
+- `JSTOR`
 
-- [SKILL.md](./SKILL.md): Codex skill instructions
-- [agents/openai.yaml](./agents/openai.yaml): skill metadata
-- [scripts](./scripts): PowerShell wrappers and Python entrypoints
-- [references](./references): workflow and troubleshooting notes
+## Browser and access requirements
 
-The `runtime/` directory is intentionally not tracked in this repo because it can contain browser session data and local machine state.
+This skill currently assumes the user is working with `Microsoft Edge`.
 
-## Install As A Local Codex Skill
+Before running the download steps, the user needs to:
 
-Clone or copy this folder into your local Codex skills directory as:
+- manually sign in through their institution or personal access route
+
+
+The skill reuses the user's live logged-in browser session. It does not create new access, bypass paywalls, or obtain permissions the user does not already have.
+
+## Typical use in Codex
+
+Use this skill when you want Codex to assemble a scholar's papers and the papers cited in those papers.
+
+Typical input:
 
 ```text
-%USERPROFILE%\.codex\skills\scholar-paper-fetcher
+Scholar name + Google Scholar profile URL
 ```
 
-After that, invoke it in Codex with:
+Example:
 
 ```text
-$scholar-paper-fetcher
+Use $scholar-paper-fetcher for Jane Doe with Google Scholar URL https://scholar.google.com/...
 ```
 
-## Environment
 
-- Windows
-- Microsoft Edge
-- Python with dependencies from [scripts/requirements.txt](./scripts/requirements.txt)
 
-Install Python dependencies with:
 
-```powershell
-pip install -r .\scripts\requirements.txt
-```
 
-## Security Note
 
-Do not commit browser profiles, downloaded PDFs, or run artifacts. This repository is intended to track the reusable skill logic only.
