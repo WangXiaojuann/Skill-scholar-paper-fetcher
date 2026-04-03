@@ -433,6 +433,12 @@ def derive_article_url(row: dict[str, str]) -> str:
     return ""
 
 
+def has_jstor_route_signal(row: dict[str, str]) -> bool:
+    article_url = derive_article_url(row).lower()
+    jstor_status = normalize_whitespace(row.get("jstor_status", "")).lower()
+    return bool(derive_stable_id(row) or "jstor.org" in article_url or jstor_status == "confirmed_on_jstor")
+
+
 def infer_platform_label(row: dict[str, str]) -> str:
     explicit = normalize_whitespace(row.get("publisher_platform") or row.get("platform") or "")
     if explicit:
@@ -440,29 +446,28 @@ def infer_platform_label(row: dict[str, str]) -> str:
 
     article_url = derive_article_url(row).lower()
     doi = normalize_doi(row.get("doi", ""))
-    jstor_status = normalize_whitespace(row.get("jstor_status", "")).lower()
 
     if "sciencedirect.com" in article_url or doi.startswith("10.1016/"):
         return ROUTE_LABELS["sciencedirect"]
     if "wiley.com" in article_url or doi.startswith("10.1111/"):
         return ROUTE_LABELS["wiley"]
-    if "jstor.org" in article_url or derive_stable_id(row) or jstor_status == "confirmed_on_jstor":
+    if has_jstor_route_signal(row):
         return ROUTE_LABELS["jstor"]
     return "Unknown"
 
 
 def infer_route(row: dict[str, str]) -> str:
+    if has_jstor_route_signal(row):
+        return "jstor"
+
     explicit = normalize_route(row.get("preferred_download_route", ""))
     if explicit != "unsupported":
         return explicit
 
     article_url = derive_article_url(row).lower()
     doi = normalize_doi(row.get("doi", ""))
-    jstor_status = normalize_whitespace(row.get("jstor_status", "")).lower()
     platform_text = normalize_whitespace(row.get("publisher_platform") or row.get("platform") or "").lower()
 
-    if derive_stable_id(row) or "jstor.org" in article_url or jstor_status == "confirmed_on_jstor":
-        return "jstor"
     if "sciencedirect" in platform_text or "elsevier" in platform_text or "sciencedirect.com" in article_url or doi.startswith("10.1016/"):
         return "sciencedirect"
     if "wiley" in platform_text or "wiley.com" in article_url or doi.startswith("10.1111/"):
