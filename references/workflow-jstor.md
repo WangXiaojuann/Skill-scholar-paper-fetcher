@@ -18,6 +18,8 @@ Accepted input patterns:
 If `stable_id` or `stable_url` is already known, the fetcher skips search and goes straight to the JSTOR PDF route.
 Also open the three supported source pages in that same session before the batch starts.
 
+If a paper was previously routed to Wiley or ScienceDirect, then later gains `stable_id`, `stable_url`, a `jstor.org` URL, or `jstor_status=confirmed_on_jstor`, rerun `build-queues`; the row should move to the JSTOR queue ahead of non-JSTOR batches.
+
 If the queue came from `build-queues`, run `jstor_input_known_stable.csv` before any other
 publisher batch. Leave `jstor_input_search.csv` for the later JSTOR cleanup pass after the known-
 stable JSTOR batch and Wiley batch are complete.

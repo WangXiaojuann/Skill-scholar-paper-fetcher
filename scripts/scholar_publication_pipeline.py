@@ -483,6 +483,9 @@ def truthy_download_supported(route: str, value: str) -> str:
 
 
 def refresh_download_fields(row: dict[str, str]) -> None:
+    row["jstor_status"] = choose_jstor_status("", row.get("jstor_status", ""))
+    if derive_stable_id(row):
+        row["jstor_status"] = "confirmed_on_jstor"
     route = infer_route(row)
     row["preferred_download_route"] = route
     row["download_supported"] = truthy_download_supported(route, row.get("download_supported", ""))
@@ -537,6 +540,16 @@ def make_record_key(row: dict[str, str]) -> str:
 
 def choose_value(existing: str, new_value: str) -> str:
     return normalize_whitespace(existing) or normalize_whitespace(new_value)
+
+
+def choose_jstor_status(existing: str, new_value: str) -> str:
+    current = normalize_whitespace(existing)
+    incoming = normalize_whitespace(new_value)
+    if incoming.lower() == "confirmed_on_jstor":
+        return "confirmed_on_jstor"
+    if current.lower() == "confirmed_on_jstor":
+        return "confirmed_on_jstor"
+    return current or incoming
 
 
 def choose_better(existing: str, new_value: str, rank_map: dict[str, int], default: str = "") -> str:
@@ -652,10 +665,10 @@ def merge_rows(existing: dict[str, str], incoming: dict[str, str]) -> dict[str, 
         "primary_output_path",
         "stable_id",
         "stable_url",
-        "jstor_status",
     ]
     for field in simple_fields:
         merged[field] = choose_value(existing.get(field, ""), incoming.get(field, ""))
+    merged["jstor_status"] = choose_jstor_status(existing.get("jstor_status", ""), incoming.get("jstor_status", ""))
 
     merged["published_status"] = choose_better(
         existing.get("published_status", ""),

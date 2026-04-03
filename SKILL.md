@@ -124,6 +124,10 @@ Supported routes:
 - `Wiley`
 - `JSTOR`
 
+Routing rule:
+
+- if a row carries JSTOR-positive evidence such as `stable_id`, `stable_url`, a `jstor.org` article URL, or `jstor_status=confirmed_on_jstor`, `build-queues` must route it to `JSTOR` first even if publisher metadata or an older `preferred_download_route` says Wiley or ScienceDirect
+
 Unsupported or currently inaccessible records must remain in `master_catalog.csv` with:
 
 - `download_supported=false`
@@ -145,6 +149,8 @@ Default mixed-source batch order after `build-queues`:
 
 `build-queues` also writes `recommended_download_order.txt` and keeps the backward-compatible
 all-in-one `jstor_input.csv`.
+
+If you add JSTOR evidence later, rerun `build-queues` so the row moves from a prior Wiley / ScienceDirect route into the JSTOR queue.
 
 Platform notes:
 
@@ -200,6 +206,8 @@ Default mixed-source batch order after `build-queues`:
 `build-queues` also writes `recommended_download_order.txt` and keeps the backward-compatible
 all-in-one `jstor_input.csv`.
 
+The same JSTOR-first routing rule applies to cited-paper queues; rerun `build-queues` after adding `stable_id`, `stable_url`, or `jstor_status=confirmed_on_jstor`.
+
 For cited downloads:
 
 - keep the same serial-download discipline as the scholar-paper stage
@@ -235,6 +243,8 @@ For JSTOR:
 - required column: `title`
 - recommended column: `authors`
 - optional columns: `ref_no`, `number`, `stable_id`, `stable_url`, `jstor_status`
+
+For mixed-source queue building, treat `stable_id`, `stable_url`, and `jstor_status=confirmed_on_jstor` as positive JSTOR route signals.
 
 2. Launch a dedicated Edge session with remote debugging.
 
@@ -312,6 +322,8 @@ mixed-source order is:
 2. `wiley_input.csv`
 3. `jstor_input_search.csv`
 4. `sciencedirect_input.csv`
+
+Any row with JSTOR-positive evidence is expected to land in one of the JSTOR queue files before Wiley or ScienceDirect.
 
 Ingest platform results:
 
