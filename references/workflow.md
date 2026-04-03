@@ -2,6 +2,9 @@
 
 Use this workflow when the paper list already exists and the user wants direct official-PDF downloading on ScienceDirect / Elsevier.
 
+In a mixed-source run, ScienceDirect / Elsevier is the last publisher batch. Run it after
+`jstor_input_known_stable.csv`, `wiley_input.csv`, and `jstor_input_search.csv`.
+
 ## Before Running
 
 - prepare an input CSV with `number` and `doi`

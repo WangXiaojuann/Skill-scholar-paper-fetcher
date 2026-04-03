@@ -136,6 +136,16 @@ Run the platform wrappers into `_runs/platform/author/<platform>/...`:
 - [scripts/run_wiley_live_session_fetch.ps1](scripts/run_wiley_live_session_fetch.ps1)
 - [scripts/run_jstor_live_session_fetch.ps1](scripts/run_jstor_live_session_fetch.ps1)
 
+Default mixed-source batch order after `build-queues`:
+
+1. `jstor_input_known_stable.csv`
+2. `wiley_input.csv`
+3. `jstor_input_search.csv`
+4. `sciencedirect_input.csv`
+
+`build-queues` also writes `recommended_download_order.txt` and keeps the backward-compatible
+all-in-one `jstor_input.csv`.
+
 Platform notes:
 
 - ScienceDirect already includes built-in `View PDF` / `View full text` fallback logic
@@ -179,6 +189,16 @@ Checkpoint before cited downloads:
 ### Stage 5: Download the Cited Papers
 
 Run `build-queues --scope cite`, then run the same platform wrappers into `_runs/platform/cite/<platform>/...`.
+
+Default mixed-source batch order after `build-queues`:
+
+1. `jstor_input_known_stable.csv`
+2. `wiley_input.csv`
+3. `jstor_input_search.csv`
+4. `sciencedirect_input.csv`
+
+`build-queues` also writes `recommended_download_order.txt` and keeps the backward-compatible
+all-in-one `jstor_input.csv`.
 
 For cited downloads:
 
@@ -284,6 +304,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_scholar_publication_pipel
   --scope author `
   --out-dir C:\path\to\run-root\_runs\queues\author
 ```
+
+After queue build, follow `recommended_download_order.txt` in that queue directory. The default
+mixed-source order is:
+
+1. `jstor_input_known_stable.csv`
+2. `wiley_input.csv`
+3. `jstor_input_search.csv`
+4. `sciencedirect_input.csv`
 
 Ingest platform results:
 

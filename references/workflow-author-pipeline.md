@@ -17,6 +17,18 @@ Use this workflow when the user starts from a scholar identity rather than a pre
 11. Build cited-paper queues and run the supported platform downloaders.
 12. Ingest cited-platform results so the final PDFs land in `cite/<AuthorPaperTitle>/`.
 
+## Platform Order
+
+After each `build-queues` step, use this default mixed-source batch order:
+
+1. `jstor_input_known_stable.csv`
+2. `wiley_input.csv`
+3. `jstor_input_search.csv`
+4. `sciencedirect_input.csv`
+
+`build-queues` writes `recommended_download_order.txt` in the queue directory and keeps the
+backward-compatible all-in-one `jstor_input.csv`.
+
 ## Discovery Standards
 
 - use Google Scholar only as the scholar identity anchor

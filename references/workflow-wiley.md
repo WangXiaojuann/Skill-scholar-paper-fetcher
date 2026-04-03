@@ -2,6 +2,9 @@
 
 Use this workflow when the paper list already exists and the user wants direct official-PDF downloading from Wiley Online Library.
 
+In a mixed-source run, Wiley is the second batch: after `jstor_input_known_stable.csv` and before
+`jstor_input_search.csv` and `sciencedirect_input.csv`.
+
 ## Before Running
 
 - prepare an input CSV with `number` and `doi`

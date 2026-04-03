@@ -838,6 +838,40 @@ def queue_row_for_jstor(record: dict[str, str], number: int) -> dict[str, str]:
     }
 
 
+def jstor_row_has_known_stable(row: dict[str, str]) -> bool:
+    return bool(derive_stable_id(row))
+
+
+def write_recommended_download_order(
+    out_dir: Path,
+    *,
+    jstor_known_count: int,
+    wiley_count: int,
+    jstor_search_count: int,
+    sciencedirect_count: int,
+) -> Path:
+    order_path = out_dir / "recommended_download_order.txt"
+    lines = [
+        "Recommended mixed-source batch order",
+        "",
+        "Run the available queue files in this order:",
+        f"1. jstor_input_known_stable.csv ({jstor_known_count} rows)",
+        "   JSTOR rows that already have a stable_id or stable_url.",
+        f"2. wiley_input.csv ({wiley_count} rows)",
+        "   Wiley rows after the known-stable JSTOR batch is complete.",
+        f"3. jstor_input_search.csv ({jstor_search_count} rows)",
+        "   Remaining JSTOR rows that still require title-search resolution.",
+        f"4. sciencedirect_input.csv ({sciencedirect_count} rows)",
+        "   ScienceDirect / Elsevier rows as the final publisher batch.",
+        "",
+        "Notes:",
+        "- Skip any file that was not written for this queue build.",
+        "- jstor_input.csv remains as the backward-compatible all-JSTOR file.",
+    ]
+    order_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return order_path
+
+
 def cmd_init_run(args: argparse.Namespace) -> int:
     out_dir = Path(args.out_dir).resolve()
     author_dir_name = sanitize_dir_component(args.author_name, "author")
@@ -939,17 +973,41 @@ def cmd_build_queues(args: argparse.Namespace) -> int:
 
     write_csv(master_catalog_path, MASTER_FIELDS, sort_master_rows(master_rows))
 
-    sciencedirect_rows: list[dict[str, str]] = []
-    wiley_rows: list[dict[str, str]] = []
-    jstor_rows: list[dict[str, str]] = []
+    sciencedirect_records: list[dict[str, str]] = []
+    wiley_records: list[dict[str, str]] = []
+    jstor_records: list[dict[str, str]] = []
     for record in eligible_rows:
         route = record.get("preferred_download_route", "")
         if route == "sciencedirect":
-            sciencedirect_rows.append(queue_row_for_science_like(record, len(sciencedirect_rows) + 1))
+            sciencedirect_records.append(record)
         elif route == "wiley":
-            wiley_rows.append(queue_row_for_science_like(record, len(wiley_rows) + 1))
+            wiley_records.append(record)
         elif route == "jstor":
-            jstor_rows.append(queue_row_for_jstor(record, len(jstor_rows) + 1))
+            jstor_records.append(record)
+
+    jstor_known_records = [record for record in jstor_records if jstor_row_has_known_stable(record)]
+    jstor_search_records = [record for record in jstor_records if not jstor_row_has_known_stable(record)]
+
+    sciencedirect_rows = [
+        queue_row_for_science_like(record, index)
+        for index, record in enumerate(sciencedirect_records, start=1)
+    ]
+    wiley_rows = [
+        queue_row_for_science_like(record, index)
+        for index, record in enumerate(wiley_records, start=1)
+    ]
+    jstor_rows = [
+        queue_row_for_jstor(record, index)
+        for index, record in enumerate(jstor_known_records + jstor_search_records, start=1)
+    ]
+    jstor_known_rows = [
+        queue_row_for_jstor(record, index)
+        for index, record in enumerate(jstor_known_records, start=1)
+    ]
+    jstor_search_rows = [
+        queue_row_for_jstor(record, index)
+        for index, record in enumerate(jstor_search_records, start=1)
+    ]
 
     outputs = [
         ("sciencedirect_input.csv", ["number", "title", "doi", "year", "journal", "note", "formatted"], sciencedirect_rows),
@@ -959,6 +1017,16 @@ def cmd_build_queues(args: argparse.Namespace) -> int:
             ["number", "ref_no", "title", "authors", "year", "journal", "doi", "stable_id", "stable_url", "article_url", "source_url", "jstor_status", "note"],
             jstor_rows,
         ),
+        (
+            "jstor_input_known_stable.csv",
+            ["number", "ref_no", "title", "authors", "year", "journal", "doi", "stable_id", "stable_url", "article_url", "source_url", "jstor_status", "note"],
+            jstor_known_rows,
+        ),
+        (
+            "jstor_input_search.csv",
+            ["number", "ref_no", "title", "authors", "year", "journal", "doi", "stable_id", "stable_url", "article_url", "source_url", "jstor_status", "note"],
+            jstor_search_rows,
+        ),
     ]
     for filename, fieldnames, rows in outputs:
         target = out_dir / filename
@@ -967,10 +1035,21 @@ def cmd_build_queues(args: argparse.Namespace) -> int:
         elif target.exists():
             target.unlink()
 
+    order_path = write_recommended_download_order(
+        out_dir,
+        jstor_known_count=len(jstor_known_rows),
+        wiley_count=len(wiley_rows),
+        jstor_search_count=len(jstor_search_rows),
+        sciencedirect_count=len(sciencedirect_rows),
+    )
+
     print(f"Queue scope: {args.scope}")
     print(f"ScienceDirect rows: {len(sciencedirect_rows)}")
     print(f"Wiley rows: {len(wiley_rows)}")
     print(f"JSTOR rows: {len(jstor_rows)}")
+    print(f"JSTOR known-stable rows: {len(jstor_known_rows)}")
+    print(f"JSTOR search rows: {len(jstor_search_rows)}")
+    print(f"Recommended order file: {order_path}")
     print(f"Queue directory: {out_dir}")
     return 0
 
