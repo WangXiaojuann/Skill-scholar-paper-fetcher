@@ -220,11 +220,15 @@ For JSTOR:
 
 Use [scripts/launch_edge_live_session.ps1](scripts/launch_edge_live_session.ps1).
 
-3. Let the user complete the manual setup in that Edge window.
+3. Before each download batch, open the three supported source pages in that same Edge session.
+
+Use [scripts/prepare_live_session_logins.ps1](scripts/prepare_live_session_logins.ps1), or rely on the three `run_*_live_session_fetch.ps1` wrappers because they now call it by default.
+
+4. Let the user complete the manual setup in that Edge window.
 
 They must:
 
-- sign in
+- sign in to the source pages they need
 - pass any bot verification or challenge page
 - open a representative article
 - click `View PDF`, `PDF`, or `Download` once
@@ -233,20 +237,20 @@ They must:
 ### ScienceDirect / Elsevier
 
 1. If needed, probe the live session with [scripts/probe_sciencedirect_live_session.py](scripts/probe_sciencedirect_live_session.py).
-2. Run [scripts/run_sciencedirect_live_session_fetch.ps1](scripts/run_sciencedirect_live_session_fetch.ps1).
+2. Run [scripts/run_sciencedirect_live_session_fetch.ps1](scripts/run_sciencedirect_live_session_fetch.ps1). It opens the three source pages first and waits for login confirmation unless `-PrepareLogin $false` is passed.
 3. Review `devtools_results.csv`, retry only failed rows, and validate the downloaded article PDFs.
 
 ### Wiley
 
 1. Open a Wiley article page in the same Edge session and click `PDF` once.
-2. Run [scripts/run_wiley_live_session_fetch.ps1](scripts/run_wiley_live_session_fetch.ps1).
+2. Run [scripts/run_wiley_live_session_fetch.ps1](scripts/run_wiley_live_session_fetch.ps1). It opens the three source pages first and waits for login confirmation unless `-PrepareLogin $false` is passed.
 3. Validate that the result is the published article PDF, not a supplement or appendix.
 
 ### JSTOR
 
 1. Sign in to JSTOR in the same Edge session.
 2. Optionally open a representative JSTOR article and click `Download` once.
-3. Run [scripts/run_jstor_live_session_fetch.ps1](scripts/run_jstor_live_session_fetch.ps1).
+3. Run [scripts/run_jstor_live_session_fetch.ps1](scripts/run_jstor_live_session_fetch.ps1). It opens the three source pages first and waits for login confirmation unless `-PrepareLogin $false` is passed.
 
 ## Core Commands
 
@@ -306,6 +310,12 @@ Launch the shared Edge session:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\launch_edge_live_session.ps1
+```
+
+Prepare the three source login pages:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\prepare_live_session_logins.ps1
 ```
 
 Run direct ScienceDirect downloading:

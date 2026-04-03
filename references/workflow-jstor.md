@@ -16,6 +16,7 @@ Accepted input patterns:
   - optional: `stable_id` or `stable_url`
 
 If `stable_id` or `stable_url` is already known, the fetcher skips search and goes straight to the JSTOR PDF route.
+Also open the three supported source pages in that same session before the batch starts.
 
 Launch command:
 
@@ -34,11 +35,20 @@ powershell -ExecutionPolicy Bypass -File .\scripts\launch_edge_live_session.ps1 
 
 In the opened Edge window:
 
-1. sign in through personal, institutional, or campus JSTOR access
-2. confirm that the same window shows your access route
-3. open a representative JSTOR article page
-4. click `Download` once to confirm the session can open the PDF
-5. keep that window open
+1. open ScienceDirect, Wiley, and JSTOR in the same session
+2. sign in through personal, institutional, or campus JSTOR access
+3. confirm that the same window shows your access route
+4. open a representative JSTOR article page
+5. click `Download` once to confirm the session can open the PDF
+6. keep that window open
+
+Helper command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\prepare_live_session_logins.ps1
+```
+
+The download wrapper calls that helper automatically unless `-PrepareLogin $false` is passed.
 
 ## Run the Batch
 
@@ -48,6 +58,15 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_jstor_live_session_fetch.
   -OutDir .\out\run-jstor-001 `
   -PageWaitSeconds 10 `
   -InterItemSleepSeconds 3
+```
+
+If the same Edge session is already prepared and you want to skip the interactive pause:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run_jstor_live_session_fetch.ps1 `
+  -InputCsv .\input-jstor.csv `
+  -OutDir .\out\run-jstor-001 `
+  -PrepareLogin $false
 ```
 
 Recommended defaults:

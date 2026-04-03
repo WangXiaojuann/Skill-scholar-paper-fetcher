@@ -21,6 +21,18 @@ Optional override for the Python entrypoint.
 .PARAMETER DebugPort
 Edge remote-debugging port.
 
+.PARAMETER PrepareLogin
+Open the three supported source pages and wait for manual login before starting the batch.
+
+.PARAMETER LaunchEdgeIfMissing
+Launch a dedicated Edge live session if none is listening on the requested debug port.
+
+.PARAMETER WaitForUserLogin
+Pause for the user to confirm the source logins are complete before downloads start.
+
+.PARAMETER PrepareLoginsScriptPath
+Optional override for the pre-login helper script.
+
 .PARAMETER PageWaitSeconds
 Seconds to wait after opening each search tab.
 
@@ -43,6 +55,14 @@ param(
 
     [int]$DebugPort = 9222,
 
+    [bool]$PrepareLogin = $true,
+
+    [bool]$LaunchEdgeIfMissing = $true,
+
+    [bool]$WaitForUserLogin = $true,
+
+    [string]$PrepareLoginsScriptPath = "",
+
     [int]$PageWaitSeconds = 10,
 
     [int]$InterItemSleepSeconds = 3,
@@ -56,12 +76,27 @@ if ([string]::IsNullOrWhiteSpace($ScriptPath)) {
     $ScriptPath = Join-Path $PSScriptRoot "jstor_live_session_fetch.py"
 }
 
+if ([string]::IsNullOrWhiteSpace($PrepareLoginsScriptPath)) {
+    $PrepareLoginsScriptPath = Join-Path $PSScriptRoot "prepare_live_session_logins.ps1"
+}
+
 if (-not (Test-Path -LiteralPath $InputCsv)) {
     throw "Input CSV not found: $InputCsv"
 }
 
 if (-not (Test-Path -LiteralPath $ScriptPath)) {
     throw "Script not found: $ScriptPath"
+}
+
+if ($PrepareLogin) {
+    if (-not (Test-Path -LiteralPath $PrepareLoginsScriptPath)) {
+        throw "Pre-login script not found: $PrepareLoginsScriptPath"
+    }
+
+    & $PrepareLoginsScriptPath `
+        -DebugPort $DebugPort `
+        -LaunchIfMissing $LaunchEdgeIfMissing `
+        -WaitForUser $WaitForUserLogin
 }
 
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null

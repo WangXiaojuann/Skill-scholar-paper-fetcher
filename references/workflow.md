@@ -8,6 +8,7 @@ Use this workflow when the paper list already exists and the user wants direct o
 - optionally include `title`, `note`, `year`, `journal`, and `formatted`
 - launch the dedicated Edge session with remote debugging
 - keep the session inside the user's authorized institution or personal access route
+- open the three supported source pages in that same session before the batch starts
 
 Launch command:
 
@@ -28,11 +29,20 @@ powershell -ExecutionPolicy Bypass -File .\scripts\launch_edge_live_session.ps1 
 
 In the opened Edge window:
 
-1. complete account or institutional sign-in
-2. pass any bot-verification page
-3. open a representative article page
-4. click `View PDF` once
-5. keep that window open
+1. open ScienceDirect, Wiley, and JSTOR in the same session
+2. complete account or institutional sign-in where needed
+3. pass any bot-verification page
+4. open a representative article page
+5. click `View PDF` once
+6. keep that window open
+
+Helper command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\prepare_live_session_logins.ps1
+```
+
+The download wrapper calls that helper automatically unless `-PrepareLogin $false` is passed.
 
 ## Optional Session Probe
 
@@ -59,6 +69,15 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_sciencedirect_live_sessio
   -PageWaitSeconds 8 `
   -InterItemSleepSeconds 6 `
   -ViewerWsTimeoutSeconds 180
+```
+
+If the same Edge session is already prepared and you want to skip the interactive pause:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run_sciencedirect_live_session_fetch.ps1 `
+  -InputCsv .\examples\input-template.csv `
+  -OutDir .\out\run-001 `
+  -PrepareLogin $false
 ```
 
 Recommended defaults:
