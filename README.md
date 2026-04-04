@@ -27,9 +27,16 @@ This skill currently assumes the user is working with `Microsoft Edge`.
 Before running the download steps, the user needs to:
 
 - manually sign in through their institution or personal access route
+- keep the shared Edge live session open for the whole download run
 
+The PowerShell download wrappers now open the three supported source pages first:
 
-The skill reuses the user's live logged-in browser session. It does not create new access, bypass paywalls, or obtain permissions the user does not already have.
+- `ScienceDirect / Elsevier`
+- `Wiley`
+- `JSTOR`
+
+They pause for the user to finish login or access setup in that same Edge window before the batch download starts.
+
 
 ## Typical use in Codex
 
@@ -47,8 +54,7 @@ Example:
 Use $scholar-paper-fetcher for Jane Doe with Google Scholar URL https://scholar.google.com/...
 ```
 
+## References
 
-
-
-
+This project references [Given-Dream/sciencedirect-live-session-fetcher](https://github.com/Given-Dream/sciencedirect-live-session-fetcher). That upstream repo documents reusable scripts and a Codex skill for serial ScienceDirect PDF fetching through a live, authorized Edge session. Here, the ScienceDirect / Elsevier leg uses the same DevTools remote-debugging + serial download idea; this repo extends it with Wiley, JSTOR, cataloging, and cited-paper workflows.
 
